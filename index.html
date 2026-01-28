@@ -3,26 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gemini Coding Bot</title>
+    <title>Llama Coding Bot</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://js.puter.com/v2/"></script>
 </head>
 <body>
 
     <div class="container">
         <header>
-            <h1>✨ Gemini Code Assistant</h1>
-            <input type="password" id="apiKey" placeholder="Paste Google AI Studio Key here">
+            <h1>🦙 Llama Code Assistant</h1>
+            <div class="status-badge">Powered by Puter.js</div>
         </header>
 
         <div id="chat-box">
             <div class="message ai-message">
-                Hello! I am powered by Google Gemini. Enter your API key above to start coding.
+                Hello! I am powered by Meta Llama 3.3 (via Puter). I can write code for you for free.
+                <br><br>
+                <i>Note: The first time you send a message, Puter may ask you to sign in.</i>
             </div>
         </div>
 
         <div class="input-area">
-            <textarea id="userInput" placeholder="Ask me to write code..."></textarea>
+            <textarea id="userInput" placeholder="Ask me to write a Python script..."></textarea>
             <button onclick="sendMessage()">Send</button>
         </div>
     </div>
