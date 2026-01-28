@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Pages Coding Bot</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>🤖 Code Assistant</h1>
+            <input type="password" id="apiKey" placeholder="Paste OpenAI API Key here">
+        </header>
+
+        <div id="chat-box">
+            <div class="message ai-message">
+                Hello! I am ready to help you code. Please enter your API Key above to start.
+            </div>
+        </div>
+
+        <div class="input-area">
+            <textarea id="userInput" placeholder="Ask me to write a Python script..."></textarea>
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
