@@ -1,3 +1,4 @@
+/* script.js */
 const chatBox = document.getElementById('chat-box');
 const userInput = document.getElementById('userInput');
 const apiKeyInput = document.getElementById('apiKey');
@@ -8,7 +9,7 @@ async function sendMessage() {
 
     if (!text) return;
     if (!apiKey) {
-        alert("Please enter your OpenAI API key first.");
+        alert("Please enter your Google AI Studio API key.");
         return;
     }
 
@@ -16,34 +17,41 @@ async function sendMessage() {
     appendMessage(text, 'user-message');
     userInput.value = '';
 
-    // 2. Prepare the API Request
-    const messages = [
-        { role: "system", content: "You are an expert coding assistant. Provide code examples in Markdown format." },
-        { role: "user", content: text }
-    ];
-
     try {
-        // 3. Call OpenAI API
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        // 2. Prepare the API URL (Gemini 1.5 Flash is fast and cheap/free)
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+        // 3. Prepare the Request Body
+        // Gemini expects "contents" array, not "messages"
+        const requestBody = {
+            contents: [
+                {
+                    parts: [{ text: text }]
+                }
+            ]
+        };
+
+        // 4. Call Google API
+        const response = await fetch(url, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
+                'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                model: "gpt-3.5-turbo", // Or "gpt-4" if you have access
-                messages: messages
-            })
+            body: JSON.stringify(requestBody)
         });
 
         const data = await response.json();
 
+        // 5. Handle Errors
         if (data.error) {
             appendMessage(`Error: ${data.error.message}`, 'ai-message');
-        } else {
-            const aiResponse = data.choices[0].message.content;
-            appendMessage(aiResponse, 'ai-message');
+            return;
         }
+
+        // 6. Extract Response Text
+        // Gemini structure: candidates[0].content.parts[0].text
+        const aiResponse = data.candidates[0].content.parts[0].text;
+        appendMessage(aiResponse, 'ai-message');
 
     } catch (error) {
         appendMessage(`Network Error: ${error.message}`, 'ai-message');
@@ -54,8 +62,8 @@ function appendMessage(text, className) {
     const div = document.createElement('div');
     div.className = `message ${className}`;
     
-    // Use marked.parse to render code blocks correctly
     if (className === 'ai-message') {
+        // Parse Markdown for code blocks
         div.innerHTML = marked.parse(text);
     } else {
         div.innerText = text;
