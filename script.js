@@ -1,60 +1,43 @@
-/* script.js */
 const chatBox = document.getElementById('chat-box');
 const userInput = document.getElementById('userInput');
-const apiKeyInput = document.getElementById('apiKey');
 
 async function sendMessage() {
     const text = userInput.value.trim();
-    const apiKey = apiKeyInput.value.trim();
-
     if (!text) return;
-    if (!apiKey) {
-        alert("Please enter your Google AI Studio API key.");
-        return;
-    }
 
-    // 1. Add User Message to Chat
+    // 1. Add User Message
     appendMessage(text, 'user-message');
     userInput.value = '';
 
+    // 2. Add Loading State
+    const loadingId = 'loading-' + Date.now();
+    const loadingDiv = document.createElement('div');
+    loadingDiv.className = 'message ai-message';
+    loadingDiv.id = loadingId;
+    loadingDiv.innerText = "Thinking... (This may prompt a popup)";
+    chatBox.appendChild(loadingDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+
     try {
-        // 2. Prepare the API URL (Gemini 1.5 Flash is fast and cheap/free)
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-
-        // 3. Prepare the Request Body
-        // Gemini expects "contents" array, not "messages"
-        const requestBody = {
-            contents: [
-                {
-                    parts: [{ text: text }]
-                }
-            ]
-        };
-
-        // 4. Call Google API
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(requestBody)
+        // 3. Call Puter.js AI
+        // We use Llama 3.3 70B because it is excellent at coding
+        const response = await puter.ai.chat(text, { 
+            model: 'meta-llama/llama-3.3-70b-instruct' 
         });
 
-        const data = await response.json();
+        // 4. Remove loading and show response
+        const loadingElement = document.getElementById(loadingId);
+        if(loadingElement) loadingElement.remove();
 
-        // 5. Handle Errors
-        if (data.error) {
-            appendMessage(`Error: ${data.error.message}`, 'ai-message');
-            return;
-        }
-
-        // 6. Extract Response Text
-        // Gemini structure: candidates[0].content.parts[0].text
-        const aiResponse = data.candidates[0].content.parts[0].text;
-        appendMessage(aiResponse, 'ai-message');
+        // Puter returns the object in response.message.content
+        const aiText = response.message.content;
+        appendMessage(aiText, 'ai-message');
 
     } catch (error) {
-        appendMessage(`Network Error: ${error.message}`, 'ai-message');
+        const loadingElement = document.getElementById(loadingId);
+        if(loadingElement) loadingElement.remove();
+        
+        appendMessage(`Error: ${error.message}. (Did you close the popup?)`, 'ai-message');
     }
 }
 
@@ -63,7 +46,6 @@ function appendMessage(text, className) {
     div.className = `message ${className}`;
     
     if (className === 'ai-message') {
-        // Parse Markdown for code blocks
         div.innerHTML = marked.parse(text);
     } else {
         div.innerText = text;
