@@ -5,31 +5,37 @@ async function sendMessage() {
     const text = userInput.value.trim();
     if (!text) return;
 
+    // Safety Check for Puter library
+    if (typeof puter === 'undefined') {
+        appendMessage("❌ Error: Puter.js is not loaded. Check your internet or index.html.", 'ai-message');
+        return;
+    }
+
     // 1. Add User Message
     appendMessage(text, 'user-message');
     userInput.value = '';
 
-    // 2. Add Loading State
+    // 2. Add Loading "Thinking" Bubble
     const loadingId = 'loading-' + Date.now();
     const loadingDiv = document.createElement('div');
     loadingDiv.className = 'message ai-message';
     loadingDiv.id = loadingId;
-    loadingDiv.innerText = "Thinking... (This may prompt a popup)";
+    loadingDiv.innerText = "Gemini is thinking...";
     chatBox.appendChild(loadingDiv);
     chatBox.scrollTop = chatBox.scrollHeight;
 
     try {
-        // 3. Call Puter.js AI
-        // We use Llama 3.3 70B because it is excellent at coding
+        // 3. Call Google Gemini via Puter
+        // We use "google/gemini-2.5-flash" for speed and coding ability
         const response = await puter.ai.chat(text, { 
-            model: 'meta-llama/llama-3.3-70b-instruct' 
+            model: 'google/gemini-2.5-flash' 
         });
 
         // 4. Remove loading and show response
         const loadingElement = document.getElementById(loadingId);
         if(loadingElement) loadingElement.remove();
 
-        // Puter returns the object in response.message.content
+        // Gemini via Puter returns the text in response.message.content
         const aiText = response.message.content;
         appendMessage(aiText, 'ai-message');
 
@@ -46,6 +52,7 @@ function appendMessage(text, className) {
     div.className = `message ${className}`;
     
     if (className === 'ai-message') {
+        // Parse Markdown for clean code blocks
         div.innerHTML = marked.parse(text);
     } else {
         div.innerText = text;
